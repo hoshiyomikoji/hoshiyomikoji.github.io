@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>相性交換カード｜運命の人診断</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --accent:#6A3FC7; --pink:#D81B60; --ink:#2B2B2B; --sub:#666; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif; color:var(--ink);
+         background:linear-gradient(#F1ECFF,#fff 320px); line-height:1.7; }
+  main { max-width:520px; margin:0 auto; padding:28px 20px 48px; }
+  .pill { display:inline-block; background:var(--accent); color:#fff; font-weight:700; border-radius:999px; padding:6px 22px; font-size:15px; }
+  h1 { font-size:24px; margin:18px 0 6px; }
+  .name { color:var(--pink); }
+  p { margin:10px 0; }
+  .card { background:#fff; border:2px solid #E6DDFB; border-radius:18px; padding:20px; margin:22px 0; }
+  .btn { display:block; text-align:center; text-decoration:none; font-weight:700; font-size:18px; border-radius:12px; padding:14px; margin:12px 0; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.secondary { background:#fff; color:var(--accent); border:2px solid var(--accent); }
+  .code { font-family:ui-monospace,Menlo,monospace; font-size:26px; font-weight:700; letter-spacing:2px; text-align:center; margin:6px 0; }
+  .note { color:var(--sub); font-size:14px; }
+  ol { padding-left:1.3em; margin:8px 0; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <span class="pill">相性交換カード</span>
+  <h1 id="title">相性交換カードが届きました</h1>
+  <p>このカードは、恋愛・相性占いアプリ「運命の人診断」で読み込むと、ふたりの相性がわかります。</p>
+
+  <div class="card">
+    <p><strong>アプリをお持ちでない方</strong></p>
+    <ol>
+      <li>下のボタンからアプリをインストールしてください。</li>
+      <li>アプリで自分の生年月日などを登録します。</li>
+      <li>もう一度このカードの QR コードを読むか、アプリの［相性交換カード］→［コードを入力する］で下のコードを入力すると、相性が表示されます。</li>
+    </ol>
+    <a class="btn primary" id="play" href="https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers">Google Play でアプリを入手（Android）</a>
+    <p class="note" id="ios-note">iPhone 版は準備中です。</p>
+  </div>
+
+  <div class="card">
+    <p><strong>アプリをお持ちの方</strong></p>
+    <a class="btn secondary hidden" id="open-app" href="#">アプリで開く</a>
+    <p class="note">または、アプリの［相性交換カード］→［コードを入力する］で、次のコードを入力してください。</p>
+    <div class="code" id="code">--------</div>
+  </div>
+
+  <p class="note">カードとコードには、氏名・生年月日・生まれた時刻などの個人情報は含まれていません（相性診断に必要な情報だけを暗号化しています）。</p>
+</main>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var code = (params.get("c") || "").toUpperCase();
+  var valid = /^[0-9A-HJKMNP-TV-Z]{8}$/.test(code);
+  var codeEl = document.getElementById("code");
+  codeEl.textContent = valid ? code.slice(0, 4) + "-" + code.slice(4) : "（コードを読み取れませんでした）";
+
+  // ニックネーム（UTF-8 を Base64url にしたもの）
+  function decodeName(s) {
+    try {
+      if (!s || !/^[A-Za-z0-9_-]+$/.test(s)) return "";
+      var b64 = s.replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+      var bin = atob(b64), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return Array.from(new TextDecoder("utf-8", { fatal: true }).decode(bytes)).slice(0, 20).join("");
+    } catch (e) { return ""; }
+  }
+  var name = decodeName(params.get("n"));
+  if (name) {
+    var t = document.getElementById("title");
+    t.textContent = "";
+    var span = document.createElement("span");
+    span.className = "name";
+    span.textContent = "【" + name + "】";
+    t.appendChild(span);
+    t.appendChild(document.createTextNode("さんから相性交換カードが届きました"));
+  }
+
+  var ua = navigator.userAgent || "";
+  var isAndroid = /Android/i.test(ua);
+  var play = "https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers";
+  if (isAndroid && valid) {
+    // インストール済みならアプリが開き、未インストールなら Google Play が開く
+    var path = "hoshiyomikoji.github.io/shibilovers/card/" + location.search;
+    var intentUrl = "intent://" + path + "#Intent;scheme=https;package=com.hoshiyomikoji.shibilovers;" +
+      "S.browser_fallback_url=" + encodeURIComponent(play) + ";end";
+    var open = document.getElementById("open-app");
+    open.href = intentUrl;
+    open.classList.remove("hidden");
+  }
+})();
+</script>
+</body>
+</html>
