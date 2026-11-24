@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>相性交換カード｜運命の人診断</title>
 <meta name="robots" content="noindex">
+<!-- LINE などでリンクを送ったときのプレビュー -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="運命の人診断">
+<meta property="og:title" content="相性交換カードが届きました｜運命の人診断">
+<meta property="og:description" content="リンクを開くと、ふたりの相性がわかります。">
+<meta property="og:image" content="https://hoshiyomikoji.github.io/shibilovers/card/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root { --accent:#6A3FC7; --pink:#D81B60; --ink:#2B2B2B; --sub:#666; }
   * { box-sizing:border-box; }
@@ -29,40 +38,35 @@
 <main>
   <span class="pill">相性交換カード</span>
   <h1 id="title">相性交換カードが届きました</h1>
-  <p>このカードは、恋愛・相性占いアプリ「運命の人診断」で読み込むと、ふたりの相性がわかります。</p>
+  <p>恋愛・相性占いアプリ「運命の人診断」で、ふたりの相性がわかります。</p>
 
-  <div class="card">
-    <p><strong>アプリをお持ちでない方</strong></p>
-    <ol>
-      <li>下のボタンからアプリをインストールしてください。</li>
-      <li>アプリで自分の生年月日などを登録します。</li>
-      <li>もう一度このカードの QR コードを読むか、アプリの［相性交換カード］→［コードを入力する］で下のコードを入力すると、相性が表示されます。</li>
-    </ol>
-    <a class="btn primary" id="play" href="https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers">Google Play でアプリを入手（Android）</a>
-    <p class="note" id="ios-note">iPhone 版は準備中です。</p>
+  <div class="card" id="android-box">
+    <a class="btn primary" id="open-app" href="https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers">アプリで相性を見る</a>
+    <p class="note"><strong>アプリをお持ちの方</strong>：アプリが開いて、すぐに相性が表示されます。</p>
+    <p class="note"><strong>お持ちでない方</strong>：Google Play が開きます。インストールしてあなたのプロファイル（生年月日など）を作ると、<span class="who">送ってくれた人</span>との相性が自動で表示されます。</p>
   </div>
 
-  <div class="card">
-    <p><strong>アプリをお持ちの方</strong></p>
-    <a class="btn secondary hidden" id="open-app" href="#">アプリで開く</a>
-    <p class="note">または、アプリの［相性交換カード］→［コードを入力する］で、次のコードを入力してください。</p>
-    <div class="code" id="code">--------</div>
+  <div class="card hidden" id="other-box">
+    <p>このカードは、Android 版の「運命の人診断」アプリで開けます。</p>
+    <a class="btn secondary" id="play-link" href="https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers">Google Play で見る</a>
+    <p class="note">iPhone 版は準備中です。</p>
   </div>
 
-  <p class="note">カードとコードには、氏名・生年月日・生まれた時刻などの個人情報は含まれていません（相性診断に必要な情報だけを暗号化しています）。</p>
+  <p class="note">カードには、氏名・生年月日・生まれた時刻などの個人情報は含まれていません（相性診断に必要な情報だけを暗号化しています）。</p>
 </main>
 <script>
 (function () {
+  var PKG = "com.hoshiyomikoji.shibilovers";
   var params = new URLSearchParams(location.search);
   var code = (params.get("c") || "").toUpperCase();
   var valid = /^[0-9A-HJKMNP-TV-Z]{8}$/.test(code);
-  var codeEl = document.getElementById("code");
-  codeEl.textContent = valid ? code.slice(0, 4) + "-" + code.slice(4) : "（コードを読み取れませんでした）";
+  var n = params.get("n") || "";
+  if (!/^[A-Za-z0-9_-]{0,120}$/.test(n)) n = "";
 
   // ニックネーム（UTF-8 を Base64url にしたもの）
   function decodeName(s) {
     try {
-      if (!s || !/^[A-Za-z0-9_-]+$/.test(s)) return "";
+      if (!s) return "";
       var b64 = s.replace(/-/g, "+").replace(/_/g, "/");
       while (b64.length % 4) b64 += "=";
       var bin = atob(b64), bytes = new Uint8Array(bin.length);
@@ -70,7 +74,7 @@
       return Array.from(new TextDecoder("utf-8", { fatal: true }).decode(bytes)).slice(0, 20).join("");
     } catch (e) { return ""; }
   }
-  var name = decodeName(params.get("n"));
+  var name = decodeName(n);
   if (name) {
     var t = document.getElementById("title");
     t.textContent = "";
@@ -79,20 +83,32 @@
     span.textContent = "【" + name + "】";
     t.appendChild(span);
     t.appendChild(document.createTextNode("さんから相性交換カードが届きました"));
+    var whos = document.querySelectorAll(".who");
+    for (var k = 0; k < whos.length; k++) whos[k].textContent = "「" + name + "」さん";
   }
 
-  var ua = navigator.userAgent || "";
-  var isAndroid = /Android/i.test(ua);
-  var play = "https://play.google.com/store/apps/details?id=com.hoshiyomikoji.shibilovers";
-  if (isAndroid && valid) {
-    // インストール済みならアプリが開き、未インストールなら Google Play が開く
-    var path = "hoshiyomikoji.github.io/shibilovers/card/" + location.search;
-    var intentUrl = "intent://" + path + "#Intent;scheme=https;package=com.hoshiyomikoji.shibilovers;" +
-      "S.browser_fallback_url=" + encodeURIComponent(play) + ";end";
-    var open = document.getElementById("open-app");
-    open.href = intentUrl;
-    open.classList.remove("hidden");
+  // カードの情報（c と n）を付けた Google Play の URL。インストール後の初回起動でアプリがこれを受け取る（インストール リファラー）
+  var ref = valid ? "c=" + code + (n ? "&n=" + n : "") : "";
+  var play = "https://play.google.com/store/apps/details?id=" + PKG + (ref ? "&referrer=" + encodeURIComponent(ref) : "");
+  document.getElementById("play-link").href = play;
+
+  var isAndroid = /Android/i.test(navigator.userAgent || "");
+  if (!isAndroid) {
+    document.getElementById("android-box").classList.add("hidden");
+    document.getElementById("other-box").classList.remove("hidden");
+    return;
   }
+  if (!valid) {
+    document.getElementById("open-app").href = play;
+    return;
+  }
+  // アプリ専用の URL（shibilovers://card?…）で開く。インストールされていなければ Google Play（カード情報つき）へ
+  var intentUrl = "intent://card?" + ref + "#Intent;scheme=shibilovers;package=" + PKG + ";" +
+    "S.browser_fallback_url=" + encodeURIComponent(play) + ";end";
+  var btn = document.getElementById("open-app");
+  btn.href = intentUrl;
+  // ページを開いたら一度だけ自動で試す（ブラウザが許可しない場合は、ボタンを押してもらう）
+  setTimeout(function () { location.href = intentUrl; }, 400);
 })();
 </script>
 </body>
