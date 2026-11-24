@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.hoshiyomikoji.shibilovers",
+      "sha256_cert_fingerprints": [
+        "73:77:84:2F:48:95:AC:FE:10:AF:02:92:1C:BB:3B:FF:31:4C:5F:A7:B0:31:16:7C:BF:81:11:29:9B:6B:4B:5F"
+      ]
+    }
+  }
+]
